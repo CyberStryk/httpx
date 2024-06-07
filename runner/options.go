@@ -233,6 +233,8 @@ type Options struct {
 	NoFallbackScheme          bool
 	TechDetect                bool
 	TLSGrab                   bool
+	TLSNames                  bool
+
 	protocol                  string
 	ShowStatistics            bool
 	StatsInterval             int
@@ -395,6 +397,7 @@ func ParseOptions() *Options {
 		flagSet.BoolVar(&options.TLSProbe, "tls-probe", false, "send http probes on the extracted TLS domains (dns_name)"),
 		flagSet.BoolVar(&options.CSPProbe, "csp-probe", false, "send http probes on the extracted CSP domains"),
 		flagSet.BoolVar(&options.TLSGrab, "tls-grab", false, "perform TLS(SSL) data grabbing"),
+		flagSet.BoolVar(&options.TLSNames, "tls-names", false, "list extracted TLS(SSL) domains (dns_name)"),
 		flagSet.BoolVar(&options.Pipeline, "pipeline", false, "probe and display server supporting HTTP1.1 pipeline"),
 		flagSet.BoolVar(&options.HTTP2Probe, "http2", false, "probe and display server supporting HTTP2"),
 		flagSet.BoolVar(&options.VHost, "vhost", false, "probe and display server supporting VHOST"),

@@ -144,8 +144,9 @@ func New(options *Options) (*Runner, error) {
 
 	httpxOptions := httpx.DefaultOptions
 	httpxOptions.NetworkPolicy, _ = networkpolicy.New(npOptions)
-	// Enables automatically tlsgrab if tlsprobe is requested
-	httpxOptions.TLSGrab = options.TLSGrab || options.TLSProbe
+	// Enables automatically tlsgrab if tlsprobe  or tlsnames is requested
+	httpxOptions.TLSGrab = options.TLSGrab || options.TLSProbe || options.TLSNames
+	httpxOptions.TLSNames = options.TLSNames
 	httpxOptions.Timeout = time.Duration(options.Timeout) * time.Second
 	httpxOptions.RetryMax = options.Retries
 	httpxOptions.FollowRedirects = options.FollowRedirects
@@ -1245,6 +1246,7 @@ func (r *Runner) process(t string, wg *sizedwaitgroup.SizedWaitGroup, hp *httpx.
 						defer wg.Done()
 						result := r.analyze(hp, protocol, target, method, t, scanopts)
 						output <- result
+
 						if scanopts.TLSProbe && result.TLSData != nil {
 							for _, tt := range result.TLSData.SubjectAN {
 								if !r.testAndSet(tt) {
@@ -1719,6 +1721,21 @@ retry:
 			builder.WriteString(" [vhost]")
 		}
 	}
+
+	// Output TLS names
+	// Show TLSData if TLSGrab option provided.
+	if r.options.TLSNames && resp.TLSData != nil {
+		builder.WriteString(" [")
+		tlsString := resp.TLSData.SubjectCN + ", " + strings.Join(resp.TLSData.SubjectAN, ", ") + ""
+		if !scanopts.OutputWithNoColor {
+			builder.WriteString(aurora.BrightGreen(tlsString).String())
+		} else {
+			builder.WriteString(tlsString)
+		}
+		builder.WriteRune(']')
+	}
+
+	// Output CDN names
 
 	// web socket
 	isWebSocket := isWebSocket(resp)
